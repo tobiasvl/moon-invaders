@@ -1,0 +1,6 @@
+[submodule "lua-8080"]
+	path = lua-8080
+	url = https://github.com/tobiasvl/lua-8080
+[submodule "moonshine"]
+	path = moonshine
+	url = https://github.com/vrld/moonshine.git
