@@ -12,26 +12,35 @@ local interrupts = {1, 2}
 function love.load(arg)
     -- Load ROM data into ROM chips and connect them to the bus
     local address = 0
-    local rom_files = love.filesystem.getDirectoryItems("assets/m/")
+
+    if love.filesystem.isFused() then
+        love.filesystem.mount(love.filesystem.getSourceBaseDirectory(), "fused_dir")
+    end
+
+    local num_files = 0
+    local rom_files = love.filesystem.getDirectoryItems("assets/")
     table.sort(rom_files, function(a, b) return a > b end)
-    for i, file in ipairs(rom_files) do
-        local rom_part = util.read_file("assets/m/" .. file)
+    for _, file in ipairs(rom_files) do
+        if string.find(file, "invaders") then
+            num_files = num_files + 1
+            local rom_part = util.read_file("assets/" .. file)
 
-        -- Read high score from save file and write it to ROM
-        if file == "invaders.e" then
-            local savefile = love.filesystem.newFile("hiscore")
-            local ok = savefile:open("r")
-            if ok then
-                for address = 0x03F4, 0x03F5 do
-                    rom_part[address] = string.byte(savefile:read(1))
+            -- Read high score from save file and write it to ROM
+            if file == "invaders.e" then
+                local savefile = love.filesystem.newFile("hiscore")
+                local ok = savefile:open("r")
+                if ok then
+                    for address = 0x03F4, 0x03F5 do
+                        rom_part[address] = string.byte(savefile:read(1))
+                    end
+                    savefile:close()
                 end
-                savefile:close()
             end
-        end
 
-        local r = rom(rom_part)
-        bus:connect(address, r)
-        address = address + r.size
+            local r = rom(rom_part)
+            bus:connect(address, r)
+            address = address + r.size
+        end
     end
 
     -- Connect RAM to the bus
@@ -59,13 +68,35 @@ function love.load(arg)
 
     -- Initialize UI
     ui.init(cpu, bus)
+
+    -- If we didn't load the ROMs correctly, override love.update
+    -- and love.draw to just display an error message
+    if num_files ~= 4 then
+        local font = love.graphics.newFont(20)
+        function love.draw()
+            love.graphics.print(num_files)
+            love.graphics.setFont(font)
+            love.graphics.printf(
+                "Couldn't locate Space Invaders ROM files.\n" ..
+                "Please put them in one of the following locations:\n\n" ..
+                string.gsub(love.filesystem.getSourceBaseDirectory(), "/", "\\") .. "\\assets\n" ..
+                string.gsub(love.filesystem.getSaveDirectory(), "/", "\\") .. "\\assets",
+                0,
+                love.graphics.getHeight() / 3,
+                love.graphics.getWidth(),
+                "center"
+            )
+        end
+        function love.update(dt) end
+    end
 end
 
 function love.update(dt)
     local num_interrupts = 0
-    -- Cycle the CPU for half a frame
+    -- Cycle the CPU
     -- TODO: Should probably do it by cycles
-    while num_interrupts ~= 2 do
+    -- TODO: Use delta time instead of running two frames per frame
+    while num_interrupts ~= 4 and not cpu.pause do
         cycles = cycles + cpu:cycle()
         -- Twice per frame, the display logic requests an interrupt.
         -- Interrupt 1 (RST 0x08) in the middle of the frame,
@@ -85,7 +116,6 @@ function love.update(dt)
             })
             num_interrupts = num_interrupts + 1
         end
-
     end
 end
 

@@ -1,11 +1,7 @@
 function love.conf(t)
-    -- Debug mode
-    t.console = true
-
     t.identity = "Moon Invaders"
     t.window.title = t.identity
     t.window.resizable = false
-    t.window.height = 600
 
     t.version = "11.3"
 
