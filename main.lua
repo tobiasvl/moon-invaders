@@ -21,6 +21,7 @@ function love.load(arg)
     local rom_files = love.filesystem.getDirectoryItems("assets/")
     table.sort(rom_files, function(a, b) return a > b end)
     for _, file in ipairs(rom_files) do
+        file = string.lower(file)
         if string.find(file, "invaders") then
             num_files = num_files + 1
             local rom_part = util.read_file("assets/" .. file)
@@ -98,6 +99,7 @@ function love.update(dt)
     -- TODO: Use delta time instead of running two frames per frame
     while num_interrupts ~= 4 and not cpu.pause do
         cycles = cycles + cpu:cycle()
+
         -- Twice per frame, the display logic requests an interrupt.
         -- Interrupt 1 (RST 0x08) in the middle of the frame,
         -- and interrupt 2 (RST 0x10) at the end. The 8080 runs at

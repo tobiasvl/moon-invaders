@@ -26,7 +26,7 @@ local cpu, bus, deferred_port_write
 -- pixel on the lines between each scanline. The pixels should be slightly wider than
 -- they are tall.
 local pixel_height = 3
-local pixel_width = pixel_height * 1.333
+local pixel_width = math.ceil(pixel_height * 1.333)
 
 -- Images
 local root_dir = ""
@@ -79,7 +79,7 @@ local glow = moonshine(
 )
 glow.parameters = {
     glow = {
-        strength = 10,
+        strength = 5,
         min_luma = 0.4
     }
 }
