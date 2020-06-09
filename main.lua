@@ -14,19 +14,27 @@ function love.load(arg)
     -- Load ROM data into ROM chips and connect them to the bus
     local address = 0
 
-    if love.filesystem.isFused() then
-        love.filesystem.mount(love.filesystem.getSourceBaseDirectory(), "fused_dir")
+    local rom_files = {
+        "invaders.h",
+        "invaders.g",
+        "invaders.f",
+        "invaders.e"
+    }
+
+    local root_dir = ""
+    if love.filesystem.isFused() and love.filesystem.mount(love.filesystem.getSourceBaseDirectory(), "fused_dir") then
+        root_dir = "fused_dir/"
     end
 
     local num_files = 0
-    local rom_files = love.filesystem.getDirectoryItems("assets/")
-    table.sort(rom_files, function(a, b) return a > b end)
     for _, file in ipairs(rom_files) do
-        file = string.lower(file)
-        if string.find(file, "invaders") then
-            num_files = num_files + 1
-            local rom_part = util.read_file("assets/" .. file)
+        local rom_part
+        if love.filesystem.getInfo(root_dir .. "assets/" .. file) then
+            rom_part = util.read_file(root_dir .. "assets/" .. file)
+        end
 
+        if rom_part then
+            num_files = num_files + 1
             -- Read high score from save file and write it to ROM
             if file == "invaders.e" then
                 local savefile = love.filesystem.newFile("hiscore")
@@ -80,7 +88,6 @@ function love.load(arg)
     if num_files ~= 4 then
         local font = love.graphics.newFont(20)
         function love.draw()
-            love.graphics.print(num_files)
             love.graphics.setFont(font)
             love.graphics.printf(
                 "Couldn't locate Space Invaders ROM files.\n" ..
@@ -112,10 +119,10 @@ function love.load(arg)
 
     -- Load sound files
     for i = 0, 9 do
-        if love.filesystem.getInfo("assets/" .. i .. ".wav") then
-            sounds[i] = love.audio.newSource("assets/" .. i .. ".wav", "static")
-        elseif love.filesystem.getInfo("assets/" .. sound_names[i + 1] .. ".wav") then
-            sounds[i] = love.audio.newSource("assets/" .. sound_names[i + 1] .. ".wav", "static")
+        if love.filesystem.getInfo(root_dir .. "assets/" .. i .. ".wav") then
+            sounds[i] = love.audio.newSourcer(root_dir .. "assets/" .. i .. ".wav", "static")
+        elseif love.filesystem.getInfo(root_dir .. "assets/" .. sound_names[i + 1] .. ".wav") then
+            sounds[i] = love.audio.newSource(root_dir .. "assets/" .. sound_names[i + 1] .. ".wav", "static")
         end
 
         if sounds[0] then
