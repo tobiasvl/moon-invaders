@@ -6,6 +6,7 @@ local cpu = lua_8080.cpu
 local bus = lua_8080.bus
 local rom = lua_8080.rom
 local ram = lua_8080.ram
+local sounds = {previous_state = {0, 0}}
 local cycles = 0
 local interrupts = {1, 2}
 
@@ -67,6 +68,10 @@ function love.load(arg)
     cpu.ports.internal.input[3] = shift_register.read
     cpu.ports.internal.output[4] = shift_register.shift
 
+    -- Sound
+    cpu.ports.internal.output[3] = play_sound(1)
+    cpu.ports.internal.output[5] = play_sound(2)
+
     -- Initialize UI
     ui.init(cpu, bus)
 
@@ -89,6 +94,69 @@ function love.load(arg)
             )
         end
         function love.update(dt) end
+    end
+
+    -- Alternate sound file names
+    local sound_names = {
+        "ufo_highpitch",
+        "shoot",
+        "explosion",
+        "invaderkilled",
+        "fastinvader1",
+        "fastinvader2",
+        "fastinvader3",
+        "fastinvader4",
+        "ufo_lowpitch",
+        "extendedplay"
+    }
+
+    -- Load sound files
+    for i = 0, 9 do
+        if love.filesystem.getInfo("assets/" .. i .. ".wav") then
+            sounds[i] = love.audio.newSource("assets/" .. i .. ".wav", "static")
+        elseif love.filesystem.getInfo("assets/" .. sound_names[i + 1] .. ".wav") then
+            sounds[i] = love.audio.newSource("assets/" .. sound_names[i + 1] .. ".wav", "static")
+        end
+
+        if sounds[0] then
+            sounds[0]:setLooping(true) -- The UFO sound should loop
+        end
+    end
+end
+
+function play_sound(bank)
+    return function(sound_mask)
+        for i = 0, 4 do
+            -- Should we play the sound?
+            local play = bit.band(bit.rshift(sound_mask, i), 1) == 1
+
+            -- Is it a rising edge?
+            local playing = bit.band(bit.rshift(sounds.previous_state[bank], i), 1) == 1
+
+            -- Look up sound source
+            local sound
+            if bank == 1 and i == 4 then
+                -- The "extra life" sound file is called 9.wav for some reason
+                sound = sounds[9]
+            else
+                sound = sounds[i + (bank == 2 and 4 or 0)]
+            end
+
+            if sound then
+                -- Start the sound on a rising edge
+                if play and not playing then
+                    sound:play()
+                end
+
+                -- Stop it on a falling edge (for looping sounds)
+                if sound:isLooping() and not play then
+                    sound:stop()
+                end
+            end
+        end
+
+        -- Save the last port output for edge checking
+        sounds.previous_state[bank] = sound_mask
     end
 end
 

@@ -8,11 +8,11 @@ A _Space Invaders_ emulator made with [LÖVE](https://love2d.org).
 Features
 --------
 
-* Persistent high scores
-* Authentic-looking shaders
+* Persistent high scores that are saved between runs!
+* Authentic-looking CRT shaders
 * Customizable colored gel overlay
 * Backdrop support
-* Sound support (TBA)
+* Sound support (for user-provided sound files)
 
 Controls
 --------
@@ -29,11 +29,11 @@ Controls
 How to run
 ----------
 
-If you're on Windows, the easiest is to download the latest release from the [Releases](https://github.com/tobiasvl/moon-invaders/releases) page.
+If you're on Windows or macOS, the easiest is to download the latest release from the [Releases](https://github.com/tobiasvl/moon-invaders/releases) page.
 
-If you're on Linux or macOS, clone or download this repository (remember the submodules!). You will also need the following:
+If you're on Linux, clone or download this repository (remember the submodules!). You will also need the following:
 
-* [LÖVE 11.3](https://love2d.org) (might work on earlier versions, but no guarantees)
+* [LÖVE 11.3](https://love2d.org); might be in your distro's package repository (it might work with earlier versions of LÖVE, but no guarantees)
 * [love-imgui](https://github.com/slages/love-imgui) (optional; displays a menu on the top)
 
 Setup
@@ -69,4 +69,19 @@ These are optional:
 
 <h3>Sounds</h3>
 
-Not supported yet.
+The sound files found online have different file names, so two variations per file are supported. These are optional.
+
+* `0.wav` / `ufo_highpitch.wav` (UFO flying)
+* `1.wav` / `shoot.wav` (player firing)
+* `2.wav` / `explosion.wav` (player death)
+* `3.wav` / `invaderkilled.wav` (alien death)
+* `4.wav` / `fastinvader1.wav` (alien fleet movement "heartbeat")
+* `5.wav` / `fastinvader2.wav`
+* `6.wav` / `fastinvader3.wav`
+* `7.wav` / `fastinvader4.wav`
+* `8.wav` / `ufo_lowpitch.wav` (UFO death)
+* `9.wav` / `extendedplay.wav` (extra life)
+
+Note that at least one website that provides these files for download have swapped the names o `shoot.wav` and `invaderkilled.wav`.
+
+I have also been unable to find `9.wav`/`extendedplay.wav` online, so those names are just guesses. In port/bit sequence, it should actually have been `4.wav`. If anyone has found the sound file online, please let me know!
