@@ -31,10 +31,25 @@ How to run
 
 If you're on Windows or macOS, the easiest is to download the latest release from the [Releases](https://github.com/tobiasvl/moon-invaders/releases) page.
 
-If you're on Linux, clone or download this repository (remember the submodules!). You will also need the following:
+If you're on Linux:
 
-* [LÖVE 11.3](https://love2d.org); might be in your distro's package repository (it might work with earlier versions of LÖVE, but no guarantees)
-* [love-imgui](https://github.com/slages/love-imgui) (optional; displays a menu on the top)
+First install [LÖVE 11.3](https://love2d.org). Your Linux distribution might have it in its package repository, but there are no guarantees that this emulator works with older versions of LÖVE.
+
+For Ubuntu, there's a third-party repository you can use to install LÖVE 11.3:
+
+```
+sudo add-apt-repository ppa:bartbes/love-stable
+sudo apt install love
+```
+
+Then clone or download this repository, including submodules with `--recursive`, and run LÖVE:
+
+```
+git clone --recursive https://github.com/tobiasvl/moon-invaders.git
+love moon-invaders/
+```
+
+Note that to get the menu bar at the top of the window you will need to install [love-imgui](https://github.com/slages/love-imgui), but you will need to build it yourself since the [Lua rock](https://luarocks.org/modules/slages/love-imgui) requires an older version of LÖVE.
 
 Setup
 -----
@@ -82,6 +97,4 @@ The sound files found online have different file names, so two variations per fi
 * `8.wav` / `ufo_lowpitch.wav` (UFO death)
 * `9.wav` / `extendedplay.wav` (extra life)
 
-Note that at least one website that provides these files for download have swapped the names o `shoot.wav` and `invaderkilled.wav`.
-
-I have also been unable to find `9.wav`/`extendedplay.wav` online, so those names are just guesses. In port/bit sequence, it should actually have been `4.wav`. If anyone has found the sound file online, please let me know!
+Note that at least one website that provides these files for download have swapped the names of `shoot.wav` and `invaderkilled.wav`.
