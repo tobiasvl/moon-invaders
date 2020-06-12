@@ -120,7 +120,7 @@ function love.load(arg)
     -- Load sound files
     for i = 0, 9 do
         if love.filesystem.getInfo(root_dir .. "assets/" .. i .. ".wav") then
-            sounds[i] = love.audio.newSourcer(root_dir .. "assets/" .. i .. ".wav", "static")
+            sounds[i] = love.audio.newSource(root_dir .. "assets/" .. i .. ".wav", "static")
         elseif love.filesystem.getInfo(root_dir .. "assets/" .. sound_names[i + 1] .. ".wav") then
             sounds[i] = love.audio.newSource(root_dir .. "assets/" .. sound_names[i + 1] .. ".wav", "static")
         end
