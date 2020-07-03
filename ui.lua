@@ -146,59 +146,54 @@ function love.draw()
 end
 
 function draw_game()
-    if drawflag then
-        -- I probably don't even need a drawflag…
-        drawflag = false
-
-        -- First we stencil the graphics data onto the gel overlay for colros
-        lg.setCanvas(display_stencil)
-            lg.clear()
-            -- Draw the actual graphics data bit by bit
-            for y = 0, 223 do
-                for x = 0, 31 do
-                    local address = 0x2400 + (y * 32) + x
-                    local byte = bus[address]
-                    for xx = 0, 7 do
-                        local pixel = bit.band(byte, 0x01)
-                        byte = bit.rshift(byte, 1)
-                        -- If the pixel is lit, stencil it
-                        if pixel == 1 then
-                            lg.stencil(function()
-                                lg.rectangle(
-                                    "fill",
-                                    (x * 8 * pixel_width) + (xx * pixel_width),
-                                    y * pixel_height,
-                                    pixel_width,
-                                    pixel_height
-                                )
-                            end, "replace", 1, true)
-                        end
+    -- First we stencil the graphics data onto the gel overlay for colros
+    lg.setCanvas(display_stencil)
+        lg.clear()
+        -- Draw the actual graphics data bit by bit
+        for y = 0, 223 do
+            for x = 0, 31 do
+                local address = 0x2400 + (y * 32) + x
+                local byte = bus[address]
+                for xx = 0, 7 do
+                    local pixel = bit.band(byte, 0x01)
+                    byte = bit.rshift(byte, 1)
+                    -- If the pixel is lit, stencil it
+                    if pixel == 1 then
+                        lg.stencil(function()
+                            lg.rectangle(
+                                "fill",
+                                (x * 8 * pixel_width) + (xx * pixel_width),
+                                y * pixel_height,
+                                pixel_width,
+                                pixel_height
+                            )
+                        end, "replace", 1, true)
                     end
                 end
             end
-            -- Now draw the overlay on only the stenciled pixels
-            lg.setStencilTest("equal", 1)
-                if overlay then
-                    lg.draw(
-                        overlay,
-                        0,
-                        0,
-                        0,
-                        pixel_width,
-                        pixel_height
-                    )
-                else
-                    lg.rectangle(
-                        "fill",
-                        0,
-                        0,
-                        256 * pixel_width,
-                        224 * pixel_height
-                    )
-                end
-            lg.setStencilTest()
-        lg.setCanvas()
-    end
+        end
+        -- Now draw the overlay on only the stenciled pixels
+        lg.setStencilTest("equal", 1)
+            if overlay then
+                lg.draw(
+                    overlay,
+                    0,
+                    0,
+                    0,
+                    pixel_width,
+                    pixel_height
+                )
+            else
+                lg.rectangle(
+                    "fill",
+                    0,
+                    0,
+                    256 * pixel_width,
+                    224 * pixel_height
+                )
+            end
+        lg.setStencilTest()
+    lg.setCanvas()
     
     -- Draw the CRT screen
     lg.setCanvas(crt_display)

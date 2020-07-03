@@ -172,7 +172,7 @@ function love.update(dt)
     -- Cycle the CPU
     -- TODO: Should probably do it by cycles
     -- TODO: Use delta time instead of running two frames per frame
-    while num_interrupts ~= 4 and not cpu.pause do
+    while num_interrupts ~= 2 and not cpu.pause do
         cycles = cycles + cpu:cycle()
 
         -- Twice per frame, the display logic requests an interrupt.
