@@ -1,7 +1,7 @@
 Moon Invaders
 =============
 
-A _Space Invaders_ emulator made with [LÖVE](https://love2d.org).
+A _Space Invaders_ emulator powered with [LÖVE](https://love2d.org) and [lua-8080](https://github.com/tobiasvl/lua-8080).
 
 ![Moon Invaders](screenshot.png)
 
