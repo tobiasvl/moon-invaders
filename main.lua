@@ -91,16 +91,17 @@ function love.load(arg)
             love.graphics.setFont(font)
             love.graphics.printf(
                 "Couldn't locate Space Invaders ROM files.\n" ..
-                "Please put them in one of the following locations:\n\n" ..
-                string.gsub(love.filesystem.getSourceBaseDirectory(), "/", "\\") .. "\\assets\n" ..
-                string.gsub(love.filesystem.getSaveDirectory(), "/", "\\") .. "\\assets",
+                    "Please put them in one of the following locations:\n\n" ..
+                        string.gsub(love.filesystem.getSourceBaseDirectory(), "/", "\\") ..
+                            "\\assets\n" .. string.gsub(love.filesystem.getSaveDirectory(), "/", "\\") .. "\\assets",
                 0,
                 love.graphics.getHeight() / 3,
                 love.graphics.getWidth(),
                 "center"
             )
         end
-        function love.update(dt) end
+        function love.update(dt)
+        end
     end
 
     -- Alternate sound file names
@@ -187,10 +188,14 @@ function love.update(dt)
             cycles = cycles - (1000000 / 30)
             -- The display outputs an RST opcode on the data bus
             -- which the CPU fetches and executes
-            cycles = cycles + cpu:execute({
-                instruction = "RST",
-                op1 = interrupts[(num_interrupts % 2) + 1]
-            })
+            cycles =
+                cycles +
+                cpu:execute(
+                    {
+                        instruction = "RST",
+                        op1 = interrupts[(num_interrupts % 2) + 1]
+                    }
+                )
             num_interrupts = num_interrupts + 1
         end
     end
