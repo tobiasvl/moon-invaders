@@ -5,8 +5,7 @@ A _Space Invaders_ emulator powered with [LÖVE](https://love2d.org) and [lua-80
 
 ![Moon Invaders](screenshot.png)
 
-Features
---------
+## Features
 
 * Persistent high scores that are saved between runs!
 * Authentic-looking CRT shaders
@@ -14,8 +13,7 @@ Features
 * Backdrop support
 * Sound support (for user-provided sound files)
 
-Controls
---------
+## Controls
 
 | Key        | Action              |
 |------------|---------------------|
@@ -26,8 +24,7 @@ Controls
 | 2          | Start 2 player mode |
 | T          | Tilt                |
 
-How to run
-----------
+## How to run
 
 If you're on Windows or macOS, the easiest is to download the latest release from the [Releases](https://github.com/tobiasvl/moon-invaders/releases) page.
 
@@ -51,8 +48,7 @@ love moon-invaders/
 
 Note that to get the menu bar at the top of the window you will need to install [love-imgui](https://github.com/slages/love-imgui), but you will need to build it yourself since the [Lua rock](https://luarocks.org/modules/slages/love-imgui) requires an older version of LÖVE.
 
-Setup
------
+## Setup
 
 You will then need to supply the emulator with ROM files, and some additional optional assets, in order to play.
 
@@ -66,7 +62,7 @@ For all the following files, put them in the following locations:
   * `~/.local/share/love/Moon\ Invaders/assets/`
 * macOS: `/Users/<your username>/Library/Application Support/LOVE/Moon Invaders/assets/`
 
-<h3>ROM</h3>
+### ROM
 
 You will need to supply your own Space Invaders ROM files. There are four files:
 
@@ -75,14 +71,16 @@ You will need to supply your own Space Invaders ROM files. There are four files:
 * `invaders.g`
 * `invaders.h`
 
-<h3>Images</h3>
+### Images
 
 These are optional:
 
 * `background.png`: Background image
 * `overlay.png`: Colored gel overlay, see the default one for the format
 
-<h3>Sounds</h3>
+### Sounds
+
+This emulator doesn't emulate the sound chip (yet?), so to get sound, you'll need to download a sound pack online.
 
 The sound files found online have different file names, so two variations per file are supported. These are optional.
 
