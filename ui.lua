@@ -87,7 +87,7 @@ end
 
 local function toggle_fullscreen()
     fullscreen = not fullscreen
-    love.window.setFullscreen(fullscreen, "desktop")
+    love.window.setFullscreen(fullscreen, "exclusive")
 end
 
 function love.keypressed(key)
@@ -152,8 +152,14 @@ end
 
 -- Since the keys are wired to single IO wires, we can just
 -- toggle them again when the key is released.
-love.keyreleased = love.keypressed
 love.gamepadreleased = love.gamepadpressed
+function love.keyreleased(key)
+    if key == "f11" then
+        return
+    else
+        love.keypressed(key)
+    end
+end
 
 local old_value = {0, 0}
 function love.joystickaxis(joystick, axis, value)

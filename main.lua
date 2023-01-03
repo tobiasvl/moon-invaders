@@ -1,3 +1,4 @@
+local bit = bit or require "bit32"
 local util = require "util"
 local shift_register = require "shift"
 local ui = require "ui"
@@ -9,6 +10,52 @@ local ram = lua_8080.ram
 local sounds = {previous_state = {0, 0}}
 local cycles = 0
 local interrupts = {1, 2}
+
+local function play_sound(bank)
+    return function(sound_mask)
+        local joysticks = love.joystick.getJoysticks()
+
+        for i = 0, 4 do
+            -- Should we play the sound?
+            local play = bit.band(bit.rshift(sound_mask, i), 1) == 1
+
+            -- Is it a rising edge?
+            local playing = bit.band(bit.rshift(sounds.previous_state[bank], i), 1) == 1
+
+            -- Look up sound source
+            local sound
+            if bank == 1 and i == 4 then
+                -- The "extra life" sound file is called 9.wav for some reason
+                sound = sounds[9]
+            else
+                sound = sounds[i + (bank == 2 and 4 or 0)]
+            end
+
+            if sound then
+                -- Start the sound on a rising edge
+                if play and not playing then
+                    sound:play()
+                end
+
+                -- Stop it on a falling edge (for looping sounds)
+                if sound:isLooping() and not play then
+                    sound:stop()
+                end
+            end
+
+            for _, joystick in ipairs(joysticks) do
+                if play and not playing then
+                    joystick:setVibration(0.5, 0.5)
+                elseif playing and not play then
+                    joystick:setVibration()
+                end
+            end
+        end
+
+        -- Save the last port output for edge checking
+        sounds.previous_state[bank] = sound_mask
+    end
+end
 
 function love.load()
     -- Load ROM data into ROM chips and connect them to the bus
@@ -53,8 +100,9 @@ function love.load()
             address = address + r.size
         end
     end
+
     -- If we didn't load the ROMs correctly, display error screen
-    if num_files ~= 4 then
+    if num_files ~= 4 or address ~= 0x2000 then
         require "no_rom"
         return
     end
@@ -114,52 +162,6 @@ function love.load()
         if sounds[0] then
             sounds[0]:setLooping(true) -- The UFO sound should loop
         end
-    end
-end
-
-function play_sound(bank)
-    return function(sound_mask)
-        local joysticks = love.joystick.getJoysticks()
-
-        for i = 0, 4 do
-            -- Should we play the sound?
-            local play = bit.band(bit.rshift(sound_mask, i), 1) == 1
-
-            -- Is it a rising edge?
-            local playing = bit.band(bit.rshift(sounds.previous_state[bank], i), 1) == 1
-
-            -- Look up sound source
-            local sound
-            if bank == 1 and i == 4 then
-                -- The "extra life" sound file is called 9.wav for some reason
-                sound = sounds[9]
-            else
-                sound = sounds[i + (bank == 2 and 4 or 0)]
-            end
-
-            if sound then
-                -- Start the sound on a rising edge
-                if play and not playing then
-                    sound:play()
-                end
-
-                -- Stop it on a falling edge (for looping sounds)
-                if sound:isLooping() and not play then
-                    sound:stop()
-                end
-            end
-
-            for _, joystick in ipairs(joysticks) do
-                if play and not playing then
-                    joystick:setVibration(0.5, 0.5)
-                elseif playing and not play then
-                    joystick:setVibration()
-                end
-            end
-        end
-
-        -- Save the last port output for edge checking
-        sounds.previous_state[bank] = sound_mask
     end
 end
 
