@@ -1,7 +1,7 @@
 function love.conf(t)
     t.identity = "Moon Invaders"
     t.window.title = t.identity
-    t.window.resizable = false
+    t.window.resizable = true
 
     t.version = "11.4"
 

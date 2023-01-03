@@ -22,13 +22,6 @@ end
 
 local cpu, bus, deferred_port_write, fullscreen
 
--- Size of the CRT "pixels", before rotating the CRT display.
--- The pixels should be one scanline tall, but the scanlines shader uses some of those
--- pixel on the lines between each scanline. The pixels should be slightly wider than
--- they are tall.
-local pixel_height = 3
-local pixel_width = math.ceil(pixel_height * 1.333)
-
 -- Images
 local root_dir = ""
 if love.filesystem.isFused() and love.filesystem.mount(love.filesystem.getSourceBaseDirectory(), "fused_dir") then
@@ -43,42 +36,67 @@ if love.filesystem.getInfo(root_dir .. "assets/background.png") then
     background = lg.newImage(root_dir .. "assets/background.png")
 end
 
--- Canvases
-local display = lg.newCanvas(pixel_width * 256, pixel_height * 224)
-local crt_display = lg.newCanvas(pixel_width * 256, pixel_height * 224)
-local display_stencil = {display, stencil = true}
+local pixel_height, pixel_width, display, crt_display, display_stencil, crt, glow, vignette
 
--- Shader setup:
+-- Initialize (or re-initialize, in the case of a resize) the display
+local function display_init(w, h)
+    w = w or lg.getWidth()
+    h = h or lg.getHeight()
+    local ratio = 4 / 3
+    -- Size of the CRT "pixels", before rotating the CRT display.
+    -- The pixels should be one scanline tall, but the scanlines shader uses some of those
+    -- pixel on the lines between each scanline. The pixels should be slightly wider than
+    -- they are tall.
+    if w / h > ratio then
+        pixel_height = h / 200
+        pixel_width = math.floor(pixel_height * ratio)
+    else
+        pixel_width = w / 200
+        pixel_height = math.floor(pixel_width * 0.75)
+    end
 
--- Scanlines and CRT barrel effect are added first. They're fairly subtle.
--- Note that these operate on the pre-rotated CRT display, because we want the
--- scanlines to A) be vertical and B) take on the color of the gel overlay.
-local crt = moonshine(pixel_width * 256, pixel_height * 224, moonshine.effects.scanlines).chain(moonshine.effects.crt)
-crt.parameters = {
-    scanlines = {
-        width = pixel_height / 2,
-        opacity = 0.5
-    },
-    crt = {
-        distortionFactor = {
-            1.02,
-            1.065
+    -- Canvases
+    display = lg.newCanvas(pixel_width * 256, pixel_height * 224)
+    crt_display = lg.newCanvas(pixel_width * 256, pixel_height * 224)
+    display_stencil = {display, stencil = true}
+
+    -- Shader setup:
+
+    -- Scanlines and CRT barrel effect are added first. They're fairly subtle.
+    -- Note that these operate on the pre-rotated CRT display, because we want the
+    -- scanlines to A) be vertical and B) take on the color of the gel overlay.
+    crt = moonshine(pixel_width * 256, pixel_height * 224, moonshine.effects.scanlines).chain(moonshine.effects.crt)
+    crt.parameters = {
+        scanlines = {
+            width = pixel_height / 2,
+            frequency = pixel_height * 224,
+            phase = 3,
+            thickness = 1,
+            opacity = 0.5
+        },
+        crt = {
+            distortionFactor = {
+                1.02,
+                1.065
+            }
         }
     }
-}
 
--- The glow is added after the rotation because it preserves transparency, so the
--- height and width switch places here
-local glow = moonshine(pixel_height * 224, pixel_width * 256, moonshine.effects.glow)
-glow.parameters = {
-    glow = {
-        strength = 5,
-        min_luma = 0.4
+    -- The glow is added after the rotation because it preserves transparency, so the
+    -- height and width switch places here
+    glow = moonshine(w, h, moonshine.effects.glow)
+    glow.parameters = {
+        glow = {
+            strength = 7,
+            min_luma = 0.4
+        }
     }
-}
 
--- The background gets a vignette so it looks illuminated from within the cabinet
-local vignette = moonshine(lg.getWidth(), lg.getHeight(), moonshine.effects.vignette)
+    -- The background gets a vignette so it looks illuminated from within the cabinet
+    vignette = moonshine(w, h, moonshine.effects.vignette)
+end
+
+love.resize = display_init
 
 -- Toggle a single bit (wire) into an IO port
 local function toggle_port_bit(port, value)
@@ -87,7 +105,14 @@ end
 
 local function toggle_fullscreen()
     fullscreen = not fullscreen
-    love.window.setFullscreen(fullscreen, "exclusive")
+    love.window.setFullscreen(fullscreen, "desktop")
+    display_init()
+end
+
+function love.mousepressed(_, _, button, istouch, presses)
+    if button == 1 and not istouch and presses == 2 then
+        toggle_fullscreen()
+    end
 end
 
 function love.keypressed(key)
@@ -373,6 +398,7 @@ local function draw_menu()
 
     imgui.Render()
 end
+
 function love.draw()
     -- If a menu item toggled a port value in the last frame,
     -- we need to toggle it back now.
@@ -391,5 +417,6 @@ end
 return {
     init = function(_cpu, _bus)
         cpu, bus = _cpu, _bus
+        display_init()
     end
 }
