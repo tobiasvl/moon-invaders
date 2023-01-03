@@ -1,7 +1,7 @@
 Moon Invaders
 =============
 
-A _Space Invaders_ emulator powered with [LÖVE](https://love2d.org) and [lua-8080](https://github.com/tobiasvl/lua-8080).
+A _Space Invaders_ emulator powered by [LÖVE](https://love2d.org) and [lua-8080](https://github.com/tobiasvl/lua-8080).
 
 ![Moon Invaders](screenshot.png)
 
@@ -26,13 +26,15 @@ A _Space Invaders_ emulator powered with [LÖVE](https://love2d.org) and [lua-80
 
 ## How to run
 
-If you're on Windows or macOS, the easiest is to download the latest release from the [Releases](https://github.com/tobiasvl/moon-invaders/releases) page.
+### Windows / macOS
 
-If you're on Linux:
+Download the latest release from the [Releases](https://github.com/tobiasvl/moon-invaders/releases) page.
 
-First install [LÖVE 11.3](https://love2d.org). Your Linux distribution might have it in its package repository, but there are no guarantees that this emulator works with older versions of LÖVE.
+### Linux
 
-For Ubuntu, there's a third-party repository you can use to install LÖVE 11.3:
+First install [LÖVE 11.4](https://love2d.org). Your Linux distribution might have it in its package repository, but there are no guarantees that this emulator works with older versions of LÖVE.
+
+For Ubuntu, there's a third-party repository you can use to install LÖVE 11.4:
 
 ```
 sudo add-apt-repository ppa:bartbes/love-stable
@@ -46,7 +48,7 @@ git clone --recursive https://github.com/tobiasvl/moon-invaders.git
 love moon-invaders/
 ```
 
-Note that to get the menu bar at the top of the window you will need to install [love-imgui](https://github.com/slages/love-imgui), but you will need to build it yourself since the [Lua rock](https://luarocks.org/modules/slages/love-imgui) requires an older version of LÖVE.
+Note that to get the menu bar at the top of the window you will need to install [love-imgui](https://github.com/MikuAuahDark/love-imgui), but you will need to build it yourself since the [Lua rock](https://luarocks.org/modules/slages/love-imgui) requires an older version of LÖVE.
 
 ## Setup
 

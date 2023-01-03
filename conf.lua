@@ -3,7 +3,7 @@ function love.conf(t)
     t.window.title = t.identity
     t.window.resizable = false
 
-    t.version = "11.3"
+    t.version = "11.4"
 
     -- Disable stuff we don't use
     t.accelerometerjoystick = false

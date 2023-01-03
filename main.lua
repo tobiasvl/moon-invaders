@@ -10,10 +10,8 @@ local sounds = {previous_state = {0, 0}}
 local cycles = 0
 local interrupts = {1, 2}
 
-function love.load(arg)
+function love.load()
     -- Load ROM data into ROM chips and connect them to the bus
-    local address = 0
-
     local rom_files = {
         "invaders.h",
         "invaders.g",
@@ -21,11 +19,14 @@ function love.load(arg)
         "invaders.e"
     }
 
+    -- LÖVE automatically searches the save directory first, then the root folder of the .love archive or source folder
+    -- But if we're running as a fused executable, we're also allowed to mount its base directory
     local root_dir = ""
     if love.filesystem.isFused() and love.filesystem.mount(love.filesystem.getSourceBaseDirectory(), "fused_dir") then
         root_dir = "fused_dir/"
     end
 
+    local address = 0x0000
     local num_files = 0
     for _, file in ipairs(rom_files) do
         local rom_part
@@ -51,6 +52,11 @@ function love.load(arg)
             bus:connect(address, r)
             address = address + r.size
         end
+    end
+    -- If we didn't load the ROMs correctly, display error screen
+    if num_files ~= 4 then
+        require "no_rom"
+        return
     end
 
     -- Connect RAM to the bus
@@ -82,27 +88,6 @@ function love.load(arg)
 
     -- Initialize UI
     ui.init(cpu, bus)
-
-    -- If we didn't load the ROMs correctly, override love.update
-    -- and love.draw to just display an error message
-    if num_files ~= 4 then
-        local font = love.graphics.newFont(20)
-        function love.draw()
-            love.graphics.setFont(font)
-            love.graphics.printf(
-                "Couldn't locate Space Invaders ROM files.\n" ..
-                    "Please put them in one of the following locations:\n\n" ..
-                        string.gsub(love.filesystem.getSourceBaseDirectory(), "/", "\\") ..
-                            "\\assets\n" .. string.gsub(love.filesystem.getSaveDirectory(), "/", "\\") .. "\\assets",
-                0,
-                love.graphics.getHeight() / 3,
-                love.graphics.getWidth(),
-                "center"
-            )
-        end
-        function love.update(dt)
-        end
-    end
 
     -- Alternate sound file names
     local sound_names = {
@@ -209,4 +194,5 @@ function love.quit()
         file:write(string.char(bus[address]), 1)
     end
     file:close()
+    return false
 end
