@@ -119,6 +119,8 @@ end
 
 function play_sound(bank)
     return function(sound_mask)
+        local joysticks = love.joystick.getJoysticks()
+
         for i = 0, 4 do
             -- Should we play the sound?
             local play = bit.band(bit.rshift(sound_mask, i), 1) == 1
@@ -144,6 +146,14 @@ function play_sound(bank)
                 -- Stop it on a falling edge (for looping sounds)
                 if sound:isLooping() and not play then
                     sound:stop()
+                end
+            end
+
+            for _, joystick in ipairs(joysticks) do
+                if play and not playing then
+                    joystick:setVibration(0.5, 0.5)
+                elseif playing and not play then
+                    joystick:setVibration()
                 end
             end
         end

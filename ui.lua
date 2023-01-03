@@ -1,3 +1,4 @@
+local bit = bit or require "bit32"
 local moonshine = require "moonshine"
 local lg = love.graphics
 
@@ -79,34 +80,31 @@ glow.parameters = {
 -- The background gets a vignette so it looks illuminated from within the cabinet
 local vignette = moonshine(lg.getWidth(), lg.getHeight(), moonshine.effects.vignette)
 
-function toggle_port_bit(port, value)
-    -- Toggle a single bit (wire) into an IO port
+-- Toggle a single bit (wire) into an IO port
+local function toggle_port_bit(port, value)
     cpu.ports.internal.input[port] = bit.bxor(cpu.ports.internal.input[port], value)
 end
 
-function toggle_fullscreen()
+local function toggle_fullscreen()
     fullscreen = not fullscreen
     love.window.setFullscreen(fullscreen, "desktop")
 end
 
 function love.keypressed(key)
-    if key == "left" then
-        toggle_port_bit(0, 0x20)
+    if key == "left" or key == "a" then
         -- Player 1
         toggle_port_bit(1, 0x20)
         -- Player 2
         toggle_port_bit(2, 0x20)
-    elseif key == "right" then
-        toggle_port_bit(0, 0x40)
+    elseif key == "right" or key == "d" then
         -- Player 1
         toggle_port_bit(1, 0x40)
         -- Player 2
         toggle_port_bit(2, 0x40)
     elseif key == "space" then
-        toggle_port_bit(0, 0x10)
         -- Player 1
         toggle_port_bit(1, 0x10)
-        -- Player 1
+        -- Player 2
         toggle_port_bit(2, 0x10)
     elseif key == "1" then
         toggle_port_bit(1, 0x04)
@@ -121,27 +119,82 @@ function love.keypressed(key)
     end
 end
 
--- Since the keys are wired to single IO wires, we can just
--- toggle them again when the key is released.
-love.keyreleased = love.keypressed
-
-function love.draw()
-    -- If a menu item toggled a port value in the last frame,
-    -- we need to toggle it back now.
-    if deferred_port_write then
-        deferred_port_write()
-        deferred_port_write = nil
+function love.gamepadpressed(joystick, button)
+    local port
+    for i, j in ipairs(love.joystick.getJoysticks()) do
+        if j == joystick and (i == 1 or i == 2) then
+            port = i
+        end
     end
 
-    draw_game()
+    -- Player specific
+    if button == "dpleft" or button == "leftshoulder" then
+        toggle_port_bit(port, 0x20)
+    elseif button == "dpright" or button == "rightshoulder" then
+        toggle_port_bit(port, 0x40)
+    elseif button == "a" or button == "b" or button == "x" or button == "y" then
+        toggle_port_bit(port, 0x10)
+    end
 
-    if imgui then
-        draw_menu()
+    -- Either player
+    if button == "start" then
+        -- Start 1 or 2 players
+        if love.joystick.getJoystickCount() == 1 then
+            toggle_port_bit(1, 0x04)
+        else
+            toggle_port_bit(1, 0x02)
+        end
+    elseif button == "back" then
+        -- Coin
+        toggle_port_bit(1, 0x01)
     end
 end
 
-function draw_game()
-    -- First we stencil the graphics data onto the gel overlay for colros
+-- Since the keys are wired to single IO wires, we can just
+-- toggle them again when the key is released.
+love.keyreleased = love.keypressed
+love.gamepadreleased = love.gamepadpressed
+
+local old_value = {0, 0}
+function love.joystickaxis(joystick, axis, value)
+    -- We're only interested in left/right
+    if axis == 2 or axis == 4 then
+        return
+    end
+
+    -- Find out if it's player 1 or player 2
+    local port
+    for player, joy in ipairs(love.joystick.getJoysticks()) do
+        if joy == joystick and (player == 1 or player == 2) then
+            port = player
+        end
+    end
+
+    -- Use 0.2 as debounce threshold, seems to work OK
+    if value > 0 and value < 0.2 then
+        value = 0
+    elseif value < 0 and value > -0.2 then
+        value = 0
+    end
+
+    if old_value[port] < 0 and value == 0 or old_value[port] == 0 and value < 0 then
+        -- Toggle moving left
+        toggle_port_bit(port, 0x20)
+    elseif old_value[port] > 0 and value == 0 or old_value[port] == 0 and value > 0 then
+        -- Toggle moving right
+        toggle_port_bit(port, 0x40)
+    elseif old_value[port] < 0 and value > 0 or old_value[port] > 0 and value < 0 then
+        -- Turning on a dime, ie. going from left to right or vice versa
+        -- without the game registering the neutral position
+        toggle_port_bit(port, 0x20)
+        toggle_port_bit(port, 0x40)
+    end
+
+    old_value[port] = value
+end
+
+local function draw_game()
+    -- First we stencil the graphics data onto the gel overlay for colors
     lg.setCanvas(display_stencil)
     lg.clear()
     -- Draw the actual graphics data bit by bit
@@ -228,7 +281,7 @@ function draw_game()
     )
 end
 
-function draw_menu()
+local function draw_menu()
     imgui.NewFrame()
     if imgui.BeginMainMenuBar() then
         if imgui.BeginMenu("Control") then
@@ -313,6 +366,20 @@ function draw_menu()
     end
 
     imgui.Render()
+end
+function love.draw()
+    -- If a menu item toggled a port value in the last frame,
+    -- we need to toggle it back now.
+    if deferred_port_write then
+        deferred_port_write()
+        deferred_port_write = nil
+    end
+
+    draw_game()
+
+    if imgui then
+        draw_menu()
+    end
 end
 
 return {

@@ -3,26 +3,30 @@ Moon Invaders
 
 A _Space Invaders_ emulator powered by [LÖVE](https://love2d.org) and [lua-8080](https://github.com/tobiasvl/lua-8080).
 
+* [Emulating the Space Invaders look and feel](https://tobiasvl.github.io/blog/space-invaders/) (my blog post about this emulator)
+* [The Quest for the Greatest: ...the greatest invaders...](https://videogamegeek.com/blogpost/115294/greatest-invaders) (testimonial/review by Alexandre Correia)
+
 ![Moon Invaders](screenshot.png)
 
 ## Features
 
 * Persistent high scores that are saved between runs!
-* Authentic-looking CRT shaders
-* Customizable colored gel overlay
-* Backdrop support
+* Authentic-looking CRT shaders, customizable colored gel overlay and background
+* Gamepad controller support
 * Sound support (for user-provided sound files)
 
 ## Controls
 
-| Key        | Action              |
-|------------|---------------------|
-| Arrow keys | Move (both players) |
-| Space      | Fire (both players) |
-| C          | Insert coin         |
-| 1          | Start 1 player mode |
-| 2          | Start 2 player mode |
-| T          | Tilt                |
+You can use the keyboard or gamepad controllers (up to two, for two players).
+
+| Key        | Button           | Action              |
+|------------|------------------|---------------------|
+| Arrow keys | D-pad / Joystick | Move (both players) |
+| Space      | A / B / X / Y    | Fire (both players) |
+| C          | Back             | Insert coin         |
+| 1          | Start            | Start 1 player mode |
+| 2          | Start            | Start 2 player mode |
+| T          |                  | Tilt                |
 
 ## How to run
 
